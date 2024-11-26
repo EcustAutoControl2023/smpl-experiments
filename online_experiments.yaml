@@ -7,7 +7,7 @@ debug_mode: False
 scheduler_name: 'fifo_scheduler'
 time_budget_s: 86400 # a day in seconds
 use_tune: True
-num_gpus: 1
+num_gpus: 0
 num_workers: 1
 # num_gpus_per_worker: 0.1
 train_iter: 2000
