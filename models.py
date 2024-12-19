@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import d3rlpy
+from d3rlpy_patch.algos.custom_bcq import TBCQ
 import ray
 import json
 from ray import tune
@@ -291,6 +292,8 @@ class OfflineRLModel(object):
             curr_algo = d3rlpy.algos.COMBO.from_json(best_params)
         elif algo_name == "MOPO":
             curr_algo = d3rlpy.algos.MOPO.from_json(best_params)
+        elif algo_name == "TBCQ":
+            curr_algo = TBCQ.from_json(best_params)
         else:
             raise Exception("algo_name is invalid!", algo_name)
 

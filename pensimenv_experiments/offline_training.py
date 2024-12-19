@@ -1,4 +1,5 @@
 import d3rlpy
+from d3rlpy_patch.dataset import TMDPDataset
 import json
 
 import numpy as np
@@ -19,6 +20,8 @@ import sys
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 from models import *
+
+from d3rlpy_patch.algos.custom_bcq import CustomBCQ, TBCQ
 
 
 class SeedData:
@@ -178,22 +181,34 @@ with open(training_dataset_loc, "rb") as handle:
 with open(eval_dataset_loc, "rb") as handle:
     eval_dataset_pkl = pickle.load(handle)
 
+print(f'shape of training_dataset_pkl["observations"]:', training_dataset_pkl["observations"].shape)
+print(f'shape of training_dataset_pkl["actions"]:', training_dataset_pkl["actions"].shape)
+print(f'shape of training_dataset_pkl["rewards"]:', training_dataset_pkl["rewards"].shape)
+print(f'shape of training_dataset_pkl["terminals"]:', training_dataset_pkl["terminals"].shape)
+print(f'shape of eval_dataset_pkl["observations"]:', eval_dataset_pkl["observations"].shape)
+print(f'shape of eval_dataset_pkl["actions"]:', eval_dataset_pkl["actions"].shape)
+print(f'shape of eval_dataset_pkl["rewards"]:', eval_dataset_pkl["rewards"].shape)
+print(f'shape of eval_dataset_pkl["terminals"]:', eval_dataset_pkl["terminals"].shape)
+
+
 
 algo_names = [
-    "BC",
-    "CQL",
-    "PLAS",
-    "PLASWithPerturbation",
-    "BEAR",
-    "SAC",
-    "BCQ",
-    "CRR",
-    "AWR",
-    "AWAC",
-    "DDPG",
-    "TD3",
-    "COMBO",
-    "MOPO",
+    # "BC",
+    # "CQL",
+    # "PLAS",
+    # "PLASWithPerturbation",
+    # "BEAR",
+    # "SAC",
+    # "BCQ",
+    # "CustomBCQ",
+    "TBCQ",
+    # "CRR",
+    # "AWR",
+    # "AWAC",
+    # "DDPG",
+    # "TD3",
+    # "COMBO",
+    # "MOPO",
 ]
 resume_from = {
     "seed": None,
@@ -204,11 +219,14 @@ resume_from = {
 with open("project_title.txt", "r+") as f:
     project_title = f.readline()
     int_in_title = re.search(r"\d+", project_title).group()
-    project_title = project_title.replace(int_in_title, str(int(int_in_title) + 1))
+    # project_title = project_title.replace(int_in_title, str(int(int_in_title) + 1))
 with open("project_title.txt", "w") as f:
     f.write(project_title)
 if debug_mode:
     project_title = "DEBUG_" + project_title
+
+# replace \n with empty string
+project_title = project_title.replace("\n", "")
 
 seed_data = SeedData(save_path=default_loc, resume_from=resume_from)
 for seed in seeds:
@@ -217,17 +235,21 @@ for seed in seeds:
     np.random.seed(seed)
     random.seed(seed)
 
-    dataset = d3rlpy.dataset.MDPDataset(
+    # dataset = d3rlpy.dataset.MDPDataset(
+    dataset = TMDPDataset(
         training_dataset_pkl["observations"],
         training_dataset_pkl["actions"],
         training_dataset_pkl["rewards"],
         training_dataset_pkl["terminals"],
+        20,
     )
-    eval_dataset = d3rlpy.dataset.MDPDataset(
+    # eval_dataset = d3rlpy.dataset.MDPDataset(
+    eval_dataset = TMDPDataset(
         eval_dataset_pkl["observations"],
         eval_dataset_pkl["actions"],
         eval_dataset_pkl["rewards"],
         eval_dataset_pkl["terminals"],
+        20,
     )
     feeded_episodes = dataset.episodes
     eval_feeded_episodes = eval_dataset.episodes
@@ -304,7 +326,22 @@ for seed in seeds:
             )
         elif algo_name == "BCQ":
             curr_algo = d3rlpy.algos.BCQ(
-                use_gpu=True,
+                use_gpu=False,
+                scaler=scaler,
+                action_scaler=action_scaler,
+                reward_scaler=reward_scaler,
+            )
+        elif algo_name == "CustomBCQ":
+            curr_algo = CustomBCQ(
+                use_gpu=False,
+                scaler=scaler,
+                action_scaler=action_scaler,
+                reward_scaler=reward_scaler,
+            )
+        elif algo_name == "TBCQ":
+            curr_algo = TBCQ(
+                batch_size=128*dataset.get_time_length(),
+                use_gpu=False,
                 scaler=scaler,
                 action_scaler=action_scaler,
                 reward_scaler=reward_scaler,
@@ -342,11 +379,11 @@ for seed in seeds:
             raise Exception("algo_name is invalid!", algo_name)
         # print(dataset_name, env.action_space.shape, env.observation_space.shape, len(dataset.episodes), np.ceil(len(dataset.episodes)*0.01))
 
-        logdir = default_loc + str(seed)
+        logdir = default_loc + str(seed) + "_" + datetime.now().strftime("%Y%m%d%H%M%S")
         acutal_dir = logdir + "/" + algo_name
-        wandb_run = wandb.init(
-            reinit=True, project=project_title, name=acutal_dir, dir=default_loc
-        )
+        # wandb_run = wandb.init(
+        #     reinit=True, project=project_title, name=acutal_dir, dir=default_loc
+        # )
         # --------- Model Based Algorithms leverages the probablistic ensemble dynamics model to generate new dynamics data with uncertainty penalties.  ---------
         if algo_name in ["COMBO", "MOPO"]:
             scorers = {
@@ -425,7 +462,8 @@ for seed in seeds:
             logdir=logdir,
             scorers=scorers,
         ):
-            wandb.log(metrics)
+            # pass
+            # wandb.log(metrics)
             if evaluate_on_environment:
                 if (
                     metrics["evaluate_on_environment_scorer"]
@@ -459,4 +497,5 @@ for seed in seeds:
                 os.path.join(acutal_dir, "best_continuous_action_diff_scorer.pt"),
                 os.path.join(acutal_dir, "best.pt"),
             )
-        wandb_run.finish()
+        # wandb_run.finish()
+

@@ -30,6 +30,7 @@ model_name = config_dict["model_name"]
 normalize = config_dict["normalize"]
 dense_reward = config_dict["dense_reward"]
 debug_mode = config_dict["debug_mode"]
+to_plot = config_dict["to_plot"]
 
 # for offlineRL online learning
 online_training = config_dict["online_training"]
@@ -86,21 +87,22 @@ env = env_creator(env_config)
 env.reset()
 
 algo_names = [
-    "baseline",
-    "BC",
-    "CQL",
-    "PLAS",
-    "PLASWithPerturbation",
-    "BEAR",
-    "SAC",
-    "BCQ",
-    "CRR",
-    "AWR",
-    "AWAC",
-    "DDPG",
-    "TD3",
-    "COMBO",
-    "MOPO",
+    # "baseline",
+    # "BC",
+    # "CQL",
+    # "PLAS",
+    # "PLASWithPerturbation",
+    # "BEAR",
+    # "SAC",
+    # "BCQ",
+    # "CRR",
+    # "AWR",
+    # "AWAC",
+    # "DDPG",
+    # "TD3",
+    # "COMBO",
+    # "MOPO",
+    "TBCQ"
 ]
 results_csv = [
     "algo_name",
@@ -125,7 +127,7 @@ try:
             algorithms,
             num_episodes=num_episodes,
             initial_states=None,
-            to_plt=False,
+            to_plt=to_plot,
             plot_dir=save_dir,
         )
         results_dict = env.report_rewards(
