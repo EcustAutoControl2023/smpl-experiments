@@ -441,12 +441,12 @@ for seed in seeds:
             }
         else:
             scorers = {
-                "td_error": d3rlpy.metrics.scorer.td_error_scorer,
-                "value_scale": d3rlpy.metrics.scorer.average_value_estimation_scorer,
-                "discounted_sum_of_advantage_scorer": d3rlpy.metrics.scorer.discounted_sum_of_advantage_scorer,
-                "value_estimation_std_scorer": d3rlpy.metrics.scorer.value_estimation_std_scorer,
-                "initial_state_value_estimation_scorer": d3rlpy.metrics.scorer.initial_state_value_estimation_scorer,
-                "continuous_action_diff_scorer": d3rlpy.metrics.scorer.continuous_action_diff_scorer,
+                # "td_error": d3rlpy.metrics.scorer.td_error_scorer,
+                # "value_scale": d3rlpy.metrics.scorer.average_value_estimation_scorer,
+                # "discounted_sum_of_advantage_scorer": d3rlpy.metrics.scorer.discounted_sum_of_advantage_scorer,
+                # "value_estimation_std_scorer": d3rlpy.metrics.scorer.value_estimation_std_scorer,
+                # "initial_state_value_estimation_scorer": d3rlpy.metrics.scorer.initial_state_value_estimation_scorer,
+                # "continuous_action_diff_scorer": d3rlpy.metrics.scorer.continuous_action_diff_scorer,
             }
 
         if evaluate_on_environment:
@@ -477,25 +477,25 @@ for seed in seeds:
                             acutal_dir, "best_evaluate_on_environment_scorer.pt"
                         )
                     )
-            if (
-                metrics["continuous_action_diff_scorer"]
-                < prev_continuous_action_diff_scorer
-            ):
-                prev_continuous_action_diff_scorer = metrics[
-                    "continuous_action_diff_scorer"
-                ]
-                curr_algo.save_model(
-                    os.path.join(acutal_dir, "best_continuous_action_diff_scorer.pt")
-                )
+            # if (
+            #     metrics["continuous_action_diff_scorer"]
+            #     < prev_continuous_action_diff_scorer
+            # ):
+            #     prev_continuous_action_diff_scorer = metrics[
+            #         "continuous_action_diff_scorer"
+            #     ]
+            #     curr_algo.save_model(
+            #         os.path.join(acutal_dir, "best_continuous_action_diff_scorer.pt")
+            #     )
         if evaluate_on_environment:
             shutil.copyfile(
                 os.path.join(acutal_dir, "best_evaluate_on_environment_scorer.pt"),
                 os.path.join(acutal_dir, "best.pt"),
             )
-        else:
-            shutil.copyfile(
-                os.path.join(acutal_dir, "best_continuous_action_diff_scorer.pt"),
-                os.path.join(acutal_dir, "best.pt"),
-            )
+        # else:
+        #     shutil.copyfile(
+        #         os.path.join(acutal_dir, "best_continuous_action_diff_scorer.pt"),
+        #         os.path.join(acutal_dir, "best.pt"),
+        #     )
         # wandb_run.finish()
 

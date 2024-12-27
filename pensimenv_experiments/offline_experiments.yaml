@@ -5,7 +5,7 @@ model_name: 'ppo'
 normalize: False
 dense_reward: True
 debug_mode: False
-to_plot: True
+to_plot: False
 
 # for online learning
 online_training: False
